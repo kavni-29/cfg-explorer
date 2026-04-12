@@ -172,6 +172,10 @@
     @apply font-mono text-sm bg-muted/50 rounded-lg p-4 border border-border overflow-x-auto;
   }
 
+  .inline-code {
+    @apply font-mono text-xs bg-secondary px-1.5 py-0.5 rounded;
+  }
+
   .hover-grow {
     @apply transition-all duration-300;
   }
