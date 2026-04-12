@@ -223,46 +223,77 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
     return <p className="text-muted-foreground text-sm">No derivation available.</p>;
   }
 
-  const step = steps[Math.min(currentStep, steps.length - 1)];
-
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-medium text-primary">{label}</h3>
-
-      {/* Current sentential form */}
-      <div className="bg-muted/20 rounded-xl p-5 flex items-center justify-center min-h-[70px]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-1 font-mono text-lg"
-          >
-            {step.sententialForm.map((sym, i) => (
-              <motion.span
-                key={`${currentStep}-${i}`}
-                initial={i === step.expandedIndex ? { scale: 1.18 } : {}}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className={`px-2.5 py-1 rounded-md transition-all duration-300 ${
-                  i === step.expandedIndex
-                    ? 'bg-secondary border-2 border-primary font-medium'
-                    : ''
-                }`}
-              >
-                {sym}
-              </motion.span>
-            ))}
-          </motion.div>
-        </AnimatePresence>
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-medium text-primary">{label}</h3>
+        <span className="text-sm text-muted-foreground">
+          Step {currentStep + 1} / {steps.length}
+        </span>
       </div>
 
-      {/* Rule used */}
-      <p className="text-center text-sm text-muted-foreground font-mono">
-        {step.ruleUsed}
-      </p>
+      {/* Stacked derivation steps */}
+      <div className="bg-muted/20 rounded-xl p-5 space-y-0 max-h-[420px] overflow-y-auto">
+        {steps.map((s, i) => {
+          if (i > currentStep) return null;
+          const isCurrent = i === currentStep;
+
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className={`flex items-start gap-3 py-3 ${
+                i < currentStep ? 'border-b border-border/50' : ''
+              }`}
+            >
+              {/* Step number */}
+              <span
+                className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                  isCurrent
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {i}
+              </span>
+
+              {/* Sentential form */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1 font-mono text-base">
+                  {i > 0 && (
+                    <span className="text-muted-foreground mr-1">⇒</span>
+                  )}
+                  {s.sententialForm.map((sym, j) => (
+                    <motion.span
+                      key={`${i}-${j}`}
+                      initial={isCurrent && j === s.expandedIndex ? { scale: 1.18 } : {}}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className={`px-2 py-0.5 rounded-md transition-all duration-300 ${
+                        isCurrent && j === s.expandedIndex
+                          ? 'bg-secondary border-2 border-primary font-medium'
+                          : isCurrent
+                          ? 'text-foreground'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {sym}
+                    </motion.span>
+                  ))}
+                </div>
+                {/* Rule used label */}
+                <p className={`text-xs font-mono mt-1 transition-colors duration-300 ${
+                  isCurrent ? 'text-primary' : 'text-muted-foreground/60'
+                }`}>
+                  {s.ruleUsed}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
 
       {/* Navigation */}
       <div className="flex items-center justify-between">
@@ -273,9 +304,12 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
         >
           <ChevronLeft className="w-4 h-4" /> Previous
         </button>
-        <span className="text-sm text-muted-foreground">
-          Step {currentStep + 1} / {steps.length}
-        </span>
+        <button
+          onClick={() => setCurrentStep(0)}
+          className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-300"
+        >
+          Reset
+        </button>
         <button
           onClick={() => setCurrentStep(Math.min(steps.length - 1, currentStep + 1))}
           disabled={currentStep === steps.length - 1}
@@ -284,24 +318,6 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
           Next <ChevronRight className="w-4 h-4" />
         </button>
       </div>
-
-      {/* Full sequence */}
-      <details className="text-sm">
-        <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors duration-300">
-          Show full derivation
-        </summary>
-        <div className="mt-3 code-block space-y-1">
-          {steps.map((s, i) => (
-            <div
-              key={i}
-              className={`${i === currentStep ? 'text-primary font-medium' : 'text-muted-foreground'}`}
-            >
-              {i > 0 && '⇒ '}
-              {s.sententialForm.join(' ')}
-            </div>
-          ))}
-        </div>
-      </details>
     </div>
   );
 }
