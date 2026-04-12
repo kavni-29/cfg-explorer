@@ -23,7 +23,7 @@ export default function GeneratorPage() {
   const [rightSteps, setRightSteps] = useState<DerivationStep[] | null>(null);
   const [parseTree, setParseTree] = useState<TreeNode | null>(null);
   const [error, setError] = useState('');
-  const [activeResultTab, setActiveResultTab] = useState<'leftmost' | 'rightmost'>('leftmost');
+  
 
   function handleExampleClick(name: string) {
     setActiveExample(name);
@@ -55,7 +55,7 @@ export default function GeneratorPage() {
           setLeftSteps(steps);
           const tree = buildParseTree(grammar, steps);
           setParseTree(tree);
-          setActiveResultTab('leftmost');
+          
         } else if (derivationType === 'leftmost') {
           setError('Could not derive the input string with leftmost derivation. Check your grammar and input.');
           return;
@@ -70,7 +70,7 @@ export default function GeneratorPage() {
             const tree = buildParseTree(grammar, steps);
             setParseTree(tree);
           }
-          if (derivationType === 'rightmost') setActiveResultTab('rightmost');
+          
         } else if (derivationType === 'rightmost') {
           setError('Could not derive the input string with rightmost derivation. Check your grammar and input.');
           return;
@@ -174,31 +174,24 @@ export default function GeneratorPage() {
             transition={{ duration: 0.35 }}
             className="space-y-6"
           >
-            {/* Derivation Stepper */}
-            <div className="bg-card rounded-2xl border border-border p-6">
-              {/* Tabs */}
-              {(leftSteps && rightSteps) && (
-                <div className="flex gap-2 mb-5">
-                  <button
-                    onClick={() => setActiveResultTab('leftmost')}
-                    className={`nav-pill text-sm ${activeResultTab === 'leftmost' ? 'nav-pill-active' : 'nav-pill-inactive'}`}
-                  >
-                    Leftmost
-                  </button>
-                  <button
-                    onClick={() => setActiveResultTab('rightmost')}
-                    className={`nav-pill text-sm ${activeResultTab === 'rightmost' ? 'nav-pill-active' : 'nav-pill-inactive'}`}
-                  >
-                    Rightmost
-                  </button>
+            {/* Derivation Steppers — side by side when both available */}
+            {leftSteps && rightSteps ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-card rounded-2xl border border-border p-6">
+                  <DerivationStepper steps={leftSteps} label="Leftmost Derivation" />
                 </div>
-              )}
-
-              <DerivationStepper
-                steps={activeResultTab === 'leftmost' ? leftSteps : rightSteps}
-                label={activeResultTab === 'leftmost' ? 'Leftmost Derivation' : 'Rightmost Derivation'}
-              />
-            </div>
+                <div className="bg-card rounded-2xl border border-border p-6">
+                  <DerivationStepper steps={rightSteps} label="Rightmost Derivation" />
+                </div>
+              </div>
+            ) : (
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <DerivationStepper
+                  steps={leftSteps || rightSteps}
+                  label={leftSteps ? 'Leftmost Derivation' : 'Rightmost Derivation'}
+                />
+              </div>
+            )}
 
             {/* Parse Tree */}
             {parseTree && (
