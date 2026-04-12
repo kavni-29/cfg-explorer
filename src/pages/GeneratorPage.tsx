@@ -55,7 +55,7 @@ export default function GeneratorPage() {
           setLeftSteps(steps);
           const tree = buildParseTree(grammar, steps);
           setParseTree(tree);
-          setActiveResultTab('leftmost');
+          
         } else if (derivationType === 'leftmost') {
           setError('Could not derive the input string with leftmost derivation. Check your grammar and input.');
           return;
@@ -70,7 +70,7 @@ export default function GeneratorPage() {
             const tree = buildParseTree(grammar, steps);
             setParseTree(tree);
           }
-          if (derivationType === 'rightmost') setActiveResultTab('rightmost');
+          
         } else if (derivationType === 'rightmost') {
           setError('Could not derive the input string with rightmost derivation. Check your grammar and input.');
           return;
