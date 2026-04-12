@@ -23,7 +23,7 @@ export default function GeneratorPage() {
   const [rightSteps, setRightSteps] = useState<DerivationStep[] | null>(null);
   const [parseTree, setParseTree] = useState<TreeNode | null>(null);
   const [error, setError] = useState('');
-  const [activeResultTab, setActiveResultTab] = useState<'leftmost' | 'rightmost'>('leftmost');
+  
 
   function handleExampleClick(name: string) {
     setActiveExample(name);

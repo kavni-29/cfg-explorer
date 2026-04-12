@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, BookOpen } from 'lucide-react';
+import { ChevronDown, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Concept {
+  id: string;
   title: string;
+  shortTitle: string;
   category: string;
   categoryColor: string;
   summary: string;
@@ -13,7 +15,9 @@ interface Concept {
 
 const concepts: Concept[] = [
   {
+    id: 'cfg',
     title: 'Context-Free Grammar (CFG)',
+    shortTitle: 'CFG',
     category: 'Foundation',
     categoryColor: 'bg-primary text-primary-foreground',
     summary: 'A formal grammar where every production rule has a single non-terminal on the left side.',
@@ -21,7 +25,9 @@ const concepts: Concept[] = [
     example: 'S → aSb | ε\nThis generates the language {aⁿbⁿ | n ≥ 0}',
   },
   {
+    id: 'nonterminal',
     title: 'Non-terminal',
+    shortTitle: 'Non-terminal',
     category: 'Components',
     categoryColor: 'bg-primary/80 text-primary-foreground',
     summary: 'A symbol that can be replaced by a sequence of other symbols using production rules.',
@@ -29,7 +35,9 @@ const concepts: Concept[] = [
     example: 'In S → aAb, both S and A are non-terminals.',
   },
   {
+    id: 'terminal',
     title: 'Terminal',
+    shortTitle: 'Terminal',
     category: 'Components',
     categoryColor: 'bg-secondary text-secondary-foreground',
     summary: 'A symbol that appears in the final derived string and cannot be further expanded.',
@@ -37,7 +45,9 @@ const concepts: Concept[] = [
     example: 'In S → aAb, the symbols a and b are terminals.',
   },
   {
+    id: 'production',
     title: 'Production Rule',
+    shortTitle: 'Production',
     category: 'Components',
     categoryColor: 'bg-secondary text-secondary-foreground',
     summary: 'A rule specifying how a non-terminal can be replaced by a sequence of symbols.',
@@ -45,7 +55,9 @@ const concepts: Concept[] = [
     example: 'E → E + T | T\nHere E can be replaced by either "E + T" or "T".',
   },
   {
+    id: 'derivation',
     title: 'Derivation',
+    shortTitle: 'Derivation',
     category: 'Process',
     categoryColor: 'bg-primary text-primary-foreground',
     summary: 'The process of repeatedly applying production rules starting from the start symbol.',
@@ -53,7 +65,9 @@ const concepts: Concept[] = [
     example: 'S ⇒ aSb ⇒ aaSbb ⇒ aabb',
   },
   {
+    id: 'leftmost',
     title: 'Leftmost Derivation',
+    shortTitle: 'Leftmost',
     category: 'Process',
     categoryColor: 'bg-primary/80 text-primary-foreground',
     summary: 'A derivation that always expands the leftmost non-terminal first.',
@@ -61,7 +75,9 @@ const concepts: Concept[] = [
     example: 'E ⇒ E+T ⇒ T+T ⇒ F+T ⇒ id+T ⇒ id+F ⇒ id+id',
   },
   {
+    id: 'rightmost',
     title: 'Rightmost Derivation',
+    shortTitle: 'Rightmost',
     category: 'Process',
     categoryColor: 'bg-primary/80 text-primary-foreground',
     summary: 'A derivation that always expands the rightmost non-terminal first.',
@@ -69,7 +85,9 @@ const concepts: Concept[] = [
     example: 'E ⇒ E+T ⇒ E+F ⇒ E+id ⇒ T+id ⇒ F+id ⇒ id+id',
   },
   {
+    id: 'parsetree',
     title: 'Parse Tree',
+    shortTitle: 'Parse Tree',
     category: 'Visualization',
     categoryColor: 'bg-secondary text-secondary-foreground',
     summary: 'A tree representation showing the hierarchical structure of a derivation.',
@@ -77,7 +95,9 @@ const concepts: Concept[] = [
     example: 'The parse tree for "id + id" with E → E + T | T has E at the root with children E, +, T.',
   },
   {
+    id: 'sentential',
     title: 'Sentential Form',
+    shortTitle: 'Sentential Form',
     category: 'Concept',
     categoryColor: 'bg-muted text-muted-foreground',
     summary: 'Any string of terminals and non-terminals derivable from the start symbol.',
@@ -85,7 +105,9 @@ const concepts: Concept[] = [
     example: 'In S ⇒ aSb ⇒ aaSbb ⇒ aabb:\n"aSb" and "aaSbb" are sentential forms.',
   },
   {
+    id: 'ambiguous',
     title: 'Ambiguous Grammar',
+    shortTitle: 'Ambiguous',
     category: 'Concept',
     categoryColor: 'bg-muted text-muted-foreground',
     summary: 'A grammar that produces more than one parse tree for some string.',
@@ -93,7 +115,9 @@ const concepts: Concept[] = [
     example: 'E → E + E | E * E | id\nis ambiguous because "id + id * id" has two parse trees.',
   },
   {
+    id: 'language',
     title: 'Language of a Grammar',
+    shortTitle: 'Language',
     category: 'Foundation',
     categoryColor: 'bg-primary text-primary-foreground',
     summary: 'The set of all strings of terminals derivable from the start symbol.',
@@ -101,7 +125,9 @@ const concepts: Concept[] = [
     example: 'For S → aSb | ε:\nL(G) = {ε, ab, aabb, aaabbb, …} = {aⁿbⁿ | n ≥ 0}',
   },
   {
+    id: 'yield',
     title: 'Yield',
+    shortTitle: 'Yield',
     category: 'Visualization',
     categoryColor: 'bg-secondary text-secondary-foreground',
     summary: 'The string formed by reading the leaves of a parse tree from left to right.',
@@ -111,7 +137,15 @@ const concepts: Concept[] = [
 ];
 
 export default function LearnPage() {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const slideRef = useRef<HTMLDivElement>(null);
+
+  const goTo = useCallback((idx: number) => {
+    setActiveIdx(idx);
+    slideRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const concept = concepts[activeIdx];
 
   return (
     <motion.div
@@ -120,62 +154,108 @@ export default function LearnPage() {
       transition={{ duration: 0.35 }}
       className="space-y-12"
     >
-      {/* Section 1: Concept Cards */}
+      {/* Section 1: Concept Slides */}
       <section>
         <div className="flex items-center gap-2 mb-6">
           <BookOpen className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-medium text-foreground">Key Concepts</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {concepts.map((concept, i) => (
-            <div key={i}>
-              <button
-                onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
-                className="card-concept w-full text-left flex gap-3"
-              >
-                <div className="accent-bar flex-shrink-0 self-stretch" />
-                <div className="flex-1 min-w-0">
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium mb-2 ${concept.categoryColor}`}>
-                    {concept.category}
-                  </span>
-                  <h3 className="text-base font-medium text-foreground mb-1 transition-all duration-300 group-hover:text-lg">
-                    {concept.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {concept.summary}
-                  </p>
-                  <ChevronDown
-                    className={`w-4 h-4 mt-2 text-muted-foreground transition-transform duration-300 ${
-                      expandedIdx === i ? 'rotate-180' : ''
-                    }`}
-                  />
-                </div>
-              </button>
 
-              <AnimatePresence>
-                {expandedIdx === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.35, ease: 'easeInOut' }}
-                    className="overflow-hidden"
-                  >
-                    <div className="bg-card border border-border border-t-0 rounded-b-xl p-5 space-y-3">
-                      <div>
-                        <h4 className="text-sm font-medium text-primary mb-1">Formal Definition</h4>
-                        <p className="text-sm text-foreground leading-relaxed">{concept.definition}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-primary mb-1">Example</h4>
-                        <pre className="code-block text-xs whitespace-pre-wrap">{concept.example}</pre>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+        {/* Index nav — scrollable pill bar */}
+        <div className="flex gap-1.5 overflow-x-auto pb-3 mb-4 scrollbar-hide">
+          {concepts.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => goTo(i)}
+              className={`flex-shrink-0 px-3.5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                activeIdx === i
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-card border border-border text-muted-foreground hover:bg-secondary hover:text-foreground'
+              }`}
+            >
+              {c.shortTitle}
+            </button>
           ))}
+        </div>
+
+        {/* Slide card */}
+        <div ref={slideRef} className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={concept.id}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="bg-card rounded-2xl border border-border overflow-hidden"
+            >
+              {/* Top accent strip */}
+              <div className="h-1.5 bg-primary" />
+
+              <div className="p-8">
+                {/* Category + title */}
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl font-mono font-medium text-primary">
+                      {String(activeIdx + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-medium mb-2 ${concept.categoryColor}`}>
+                      {concept.category}
+                    </span>
+                    <h3 className="text-2xl font-medium text-foreground">{concept.title}</h3>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <p className="text-base text-foreground leading-relaxed mb-6 border-l-2 border-primary pl-4">
+                  {concept.summary}
+                </p>
+
+                {/* Definition + Example side by side */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-muted/30 rounded-xl p-5">
+                    <h4 className="text-sm font-medium text-primary mb-2">Formal Definition</h4>
+                    <p className="text-sm text-foreground leading-[1.8]">{concept.definition}</p>
+                  </div>
+                  <div className="bg-secondary/30 rounded-xl p-5">
+                    <h4 className="text-sm font-medium text-primary mb-2">Example</h4>
+                    <pre className="font-mono text-sm text-foreground whitespace-pre-wrap leading-relaxed">{concept.example}</pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom nav */}
+              <div className="flex items-center justify-between px-8 py-4 border-t border-border bg-muted/20">
+                <button
+                  onClick={() => goTo(Math.max(0, activeIdx - 1))}
+                  disabled={activeIdx === 0}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-40 transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </button>
+                <div className="flex gap-1">
+                  {concepts.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => goTo(i)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        i === activeIdx ? 'bg-primary w-6' : 'bg-border hover:bg-muted-foreground'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => goTo(Math.min(concepts.length - 1, activeIdx + 1))}
+                  disabled={activeIdx === concepts.length - 1}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-40 transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+                >
+                  Next <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
 
