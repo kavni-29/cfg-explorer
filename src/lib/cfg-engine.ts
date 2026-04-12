@@ -34,7 +34,7 @@ export function parseGrammar(input: string): Grammar {
   let startSymbol = '';
 
   for (const line of lines) {
-    const match = line.match(/^\s*(\S+)\s*[→->]+\s*(.+)$/);
+    const match = line.match(/^\s*(\S+)\s*(?:→|->)+\s*(.+)$/);
     if (!match) continue;
 
     const lhs = match[1].trim();
