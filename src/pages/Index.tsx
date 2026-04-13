@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Header from '@/components/Header';
-import LearnPage from './LearnPage';
-import GeneratorPageFixed from './GeneratorPageFixed';
-import VisualizerPageFixed from './VisualizerPageFixed';
-import HelpPage from './HelpPage';
+import LearnPageFixed from './LearnPageFixed';
+import GeneratorPageEnhanced from './GeneratorPageEnhanced';
+import VisualizerPageEnhanced from './VisualizerPageEnhanced';
+import QuizPage from './QuizPage';
+import HelpPageEnhanced from './HelpPageEnhanced';
 import {
   EXAMPLES,
   type DerivationStep,
@@ -12,7 +13,7 @@ import {
   type TreeNode,
 } from '@/lib/cfg-engine-fixed';
 
-type Tab = 'learn' | 'generator' | 'visualizer' | 'help';
+type Tab = 'learn' | 'generator' | 'visualizer' | 'quiz' | 'help';
 
 export type DerivationType = 'leftmost' | 'rightmost' | 'both';
 
@@ -54,12 +55,13 @@ export default function Index() {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.35 }}
           >
-            {activeTab === 'learn' && <LearnPage />}
+            {activeTab === 'learn' && <LearnPageFixed />}
             {activeTab === 'generator' && (
-              <GeneratorPageFixed state={generatorState} onStateChange={setGeneratorState} />
+              <GeneratorPageEnhanced state={generatorState} onStateChange={setGeneratorState} />
             )}
-            {activeTab === 'visualizer' && <VisualizerPageFixed state={generatorState} />}
-            {activeTab === 'help' && <HelpPage />}
+            {activeTab === 'visualizer' && <VisualizerPageEnhanced state={generatorState} />}
+            {activeTab === 'quiz' && <QuizPage />}
+            {activeTab === 'help' && <HelpPageEnhanced />}
           </motion.div>
         </AnimatePresence>
       </main>
