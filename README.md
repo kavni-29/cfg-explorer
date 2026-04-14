@@ -1,62 +1,88 @@
 # Context Free Grammar and Parse Trees
 
-Context Free Grammar and Parse Trees is an interactive teaching website for learning CFG fundamentals through derivations, parse trees, visual walkthroughs, and repeatable quiz practice. The project is deployed on Vercel and is designed for undergraduate students, instructors, and self-learners studying formal languages, automata, or compiler design.
+Context Free Grammar and Parse Trees is an interactive educational website for learning context-free grammars through guided theory, derivation generation, parse tree visualization, and repeatable quiz practice. It is aimed at undergraduate students, instructors, and self-learners studying formal languages, automata, and compiler design.
+
+The project is deployed on Vercel and built as a frontend-only React application.
 
 ## What The Website Covers
 
-- concept learning for CFG terminology and core theory
+- CFG concepts such as terminals, non-terminals, productions, derivations, ambiguity, yield, and sentential forms
 - leftmost and rightmost derivation generation from custom grammar input
-- parse tree generation and interactive node inspection
-- visual tree construction and yield explanation
-- ambiguity demonstration through multiple parse structures
-- randomized quiz practice for repeated revision
+- parse tree generation with interactive node inspection
+- step-by-step tree construction and yield explanation
+- ambiguity demonstration through alternate parse structures
+- quiz-based practice with changing question sets
 
 ## Live Project
 
 This project is deployed through Vercel.
 
-## Section Previews
+## Website Screenshots
 
-### Learn
+### Learn Page
 
-The Learn tab introduces CFG vocabulary, the grammar tuple `G = (V, T, P, S)`, derivation comparison, and parse-tree explanations in a visual format.
+The Learn page introduces CFG vocabulary, visual concept cards, grammar components, and derivation theory before users begin generating strings.
 
-![Learn section preview](docs/readme/learn-preview.svg)
+#### Key Concepts
 
-### Generator
+![Learn key concepts](docs/readme/screenshots/learn-key-concepts.png)
 
-The Generator tab lets users enter their own grammar and input string, generate leftmost or rightmost derivations, inspect step explanations, and export visual results as images.
+#### Grammar Components and Derivation Theory
 
-![Generator section preview](docs/readme/generator-preview.svg)
+![Learn grammar components](docs/readme/screenshots/learn-components.png)
 
-### Visualizer
+### Generator Page
 
-The Visualizer tab focuses on tree structure. It supports tree construction playback, ambiguity comparison, yield exploration, focused viewing, node dragging, and zooming.
+The Generator page lets users enter grammar rules, choose an input string, and generate derivations and parse trees from their own input.
 
-![Visualizer section preview](docs/readme/visualizer-preview.svg)
+#### Generator Workspace
 
-### Quiz
+![Generator workspace](docs/readme/screenshots/generator-input.png)
 
-The Quiz tab creates fresh question sets so learners can keep testing their understanding without being limited to a fixed static question list.
+#### Leftmost and Rightmost Derivation View
 
-![Quiz section preview](docs/readme/quiz-preview.svg)
+![Generator derivations](docs/readme/screenshots/generator-derivations.png)
+
+### Visualizer Page
+
+The Visualizer page is built for tree-focused exploration, including direct tree generation, construction playback, and interactive tree viewing.
+
+#### Visualizer Input Area
+
+![Visualizer input area](docs/readme/screenshots/visualizer-input.png)
+
+#### Step-by-Step Tree Construction
+
+![Visualizer tree construction](docs/readme/screenshots/visualizer-tree.png)
+
+### Quiz Page
+
+The Quiz page gives students changing question sets so they can keep practising without repeating a fixed static sheet.
+
+![Quiz page](docs/readme/screenshots/quiz-page.png)
+
+### Help Page
+
+The Help page provides a concise explanation of the grammar format, the tool workflow, and supporting theory.
+
+![Help page](docs/readme/screenshots/help-page.png)
 
 ## Core Features
 
 - custom grammar input using `->` and `|`
 - support for `ε` as the empty string
 - leftmost, rightmost, or dual derivation generation
-- side-by-side derivation explanation panel
+- side-by-side derivation explanation panels
 - autoplay controls for derivation steps and tree construction
 - interactive parse trees with draggable nodes
-- hover explanations for parse-tree nodes
+- hover explanations for parse tree nodes
 - image export for derivation views and parse trees
 - grammar input directly inside the visualizer
 - randomized quiz practice
 
 ## Grammar Input Format
 
-The grammar input is written in a classroom-friendly style:
+The grammar input uses a classroom-friendly style:
 
 ```text
 S -> a S b | ε
@@ -78,17 +104,80 @@ Guidelines:
 - use `ε` for the empty string
 - spaces are optional for many single-character token inputs
 
-## Project Structure
+## Repository Structure And File Purpose
 
-- [src/pages/Index.tsx](/D:/cfg-explorer/src/pages/Index.tsx:1): top-level tab routing and shared generator state
-- [src/pages/LearnPageFixed.tsx](/D:/cfg-explorer/src/pages/LearnPageFixed.tsx:1): Learn page content and theory sections
-- [src/pages/GeneratorPageEnhanced.tsx](/D:/cfg-explorer/src/pages/GeneratorPageEnhanced.tsx:1): grammar input, derivations, explanations, and parse tree generation
-- [src/pages/VisualizerPageEnhanced.tsx](/D:/cfg-explorer/src/pages/VisualizerPageEnhanced.tsx:1): tree construction, ambiguity, yield, and visualizer-side grammar input
-- [src/pages/QuizPage.tsx](/D:/cfg-explorer/src/pages/QuizPage.tsx:1): randomized quiz generation and feedback flow
-- [src/pages/HelpPageEnhanced.tsx](/D:/cfg-explorer/src/pages/HelpPageEnhanced.tsx:1): concise usage and theory help
-- [src/lib/cfg-engine-fixed.ts](/D:/cfg-explorer/src/lib/cfg-engine-fixed.ts:1): CFG parsing, derivation logic, and parse-tree construction
-- [src/components/ParseTreeSVGFixed.tsx](/D:/cfg-explorer/src/components/ParseTreeSVGFixed.tsx:1): interactive tree rendering
-- [src/lib/export-utils.ts](/D:/cfg-explorer/src/lib/export-utils.ts:1): image export helpers
+### Root Files
+
+- [`package.json`](package.json): project metadata, npm scripts, and dependency definitions
+- [`package-lock.json`](package-lock.json): npm lockfile for reproducible installs
+- [`index.html`](index.html): Vite HTML entry file, browser metadata, favicon, and social preview metadata
+- [`.gitignore`](.gitignore): ignored files and folders
+- [`vite.config.ts`](vite.config.ts): Vite configuration, dev server settings, and path alias setup
+- [`tailwind.config.ts`](tailwind.config.ts): Tailwind theme configuration and custom palette tokens
+- [`postcss.config.js`](postcss.config.js): PostCSS configuration for Tailwind and Autoprefixer
+- [`eslint.config.js`](eslint.config.js): linting setup for the codebase
+- [`tsconfig.json`](tsconfig.json): shared TypeScript configuration
+- [`tsconfig.app.json`](tsconfig.app.json): TypeScript settings for the frontend source files
+- [`tsconfig.node.json`](tsconfig.node.json): TypeScript settings for tooling and config files
+- [`vitest.config.ts`](vitest.config.ts): Vitest configuration
+- [`components.json`](components.json): shadcn/ui configuration and aliases
+- [`README.md`](README.md): project documentation
+
+### Public Assets
+
+- [`public/og-preview.svg`](public/og-preview.svg): Open Graph and Twitter preview image for sharing the project
+- [`public/robots.txt`](public/robots.txt): crawler instructions for the deployed site
+
+### Documentation Assets
+
+- [`docs/readme/screenshots`](docs/readme/screenshots): screenshots used inside the GitHub README
+
+### Source Entry And Global Styling
+
+- [`src/main.tsx`](src/main.tsx): React entry point that mounts the application
+- [`src/App.tsx`](src/App.tsx): top-level app wrapper
+- [`src/index.css`](src/index.css): global styling, theme tokens, animation definitions, and shared visual classes
+
+### Main Pages
+
+- [`src/pages/Index.tsx`](src/pages/Index.tsx): main page router and shared generator state
+- [`src/pages/LearnPageFixed.tsx`](src/pages/LearnPageFixed.tsx): final Learn page implementation
+- [`src/pages/GeneratorPageEnhanced.tsx`](src/pages/GeneratorPageEnhanced.tsx): final Generator page implementation
+- [`src/pages/VisualizerPageEnhanced.tsx`](src/pages/VisualizerPageEnhanced.tsx): final Visualizer page implementation
+- [`src/pages/QuizPage.tsx`](src/pages/QuizPage.tsx): quiz generation, scoring, and feedback
+- [`src/pages/HelpPageEnhanced.tsx`](src/pages/HelpPageEnhanced.tsx): Help page content and usage instructions
+- [`src/pages/NotFound.tsx`](src/pages/NotFound.tsx): fallback route page
+
+### Components
+
+- [`src/components/Header.tsx`](src/components/Header.tsx): top header and tab navigation
+- [`src/components/ParseTreeSVGFixed.tsx`](src/components/ParseTreeSVGFixed.tsx): interactive parse tree renderer with dragging, zoom, and hover information
+- [`src/components/ui`](src/components/ui): reusable UI primitives used across the interface
+
+### Core Logic
+
+- [`src/lib/cfg-engine-fixed.ts`](src/lib/cfg-engine-fixed.ts): grammar parsing, derivation generation, parse tree creation, examples, and utility logic for CFG behaviour
+- [`src/lib/export-utils.ts`](src/lib/export-utils.ts): helpers for exporting derivation and parse tree views as images
+- [`src/lib/utils.ts`](src/lib/utils.ts): shared utility helpers
+
+### Tests
+
+- [`src/test/cfg-engine-fixed.test.ts`](src/test/cfg-engine-fixed.test.ts): tests for grammar parsing and derivation behaviour
+- [`src/test/example.test.ts`](src/test/example.test.ts): simple example test scaffold
+- [`src/test/setup.ts`](src/test/setup.ts): shared Vitest setup
+
+### Earlier Iteration Files
+
+These files were created during earlier development passes and are not the primary files currently wired into the final app flow:
+
+- `src/pages/GeneratorPage.tsx`
+- `src/pages/GeneratorPageFixed.tsx`
+- `src/pages/VisualizerPage.tsx`
+- `src/pages/VisualizerPageFixed.tsx`
+- `src/pages/LearnPage.tsx`
+- `src/pages/HelpPage.tsx`
+- `src/components/ParseTreeSVG.tsx`
+- `src/lib/cfg-engine.ts`
 
 ## Tech Stack
 
