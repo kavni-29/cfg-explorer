@@ -19,9 +19,9 @@ This project is deployed through Vercel.
 
 ## Video Walkthrough
 
-A short screen recording of the website is included in the repository:
+A short screen recording of the website is included below:
 
-[Watch the project walkthrough video](docs/readme/media/cfg-demo-walkthrough.mp4)
+<video src="docs/readme/media/cfg-demo-walkthrough.mp4" controls width="100%"></video>
 
 ## Website Screenshots
 
