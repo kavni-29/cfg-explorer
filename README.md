@@ -17,6 +17,12 @@ The project is deployed on Vercel and built as a frontend-only React application
 
 This project is deployed through Vercel.
 
+## Video Walkthrough
+
+A short screen recording of the website is included in the repository:
+
+[Watch the project walkthrough video](docs/readme/media/cfg-demo-walkthrough.mp4)
+
 ## Website Screenshots
 
 ### Learn Page
