@@ -104,6 +104,72 @@ Guidelines:
 - use `ε` for the empty string
 - spaces are optional for many single-character token inputs
 
+## Directory Structure
+
+```text
+cfg-explorer/
+|-- public/                            # Static public assets used by the deployed site
+|   |-- og-preview.svg                 # Social sharing preview image
+|   `-- robots.txt                     # Search crawler instructions
+|
+|-- docs/                              # Repository documentation assets
+|   `-- readme/
+|       `-- screenshots/               # Screenshots displayed in README.md
+|
+|-- src/                               # Main application source code
+|   |-- components/                    # Shared React components
+|   |   |-- ui/                        # Reusable shadcn/ui primitives
+|   |   |-- Header.tsx                 # Top header and tab navigation
+|   |   |-- NavLink.tsx                # Navigation link helper
+|   |   |-- ParseTreeSVG.tsx           # Earlier parse tree renderer
+|   |   `-- ParseTreeSVGFixed.tsx      # Final interactive parse tree renderer
+|   |
+|   |-- hooks/                         # Shared React hooks
+|   |   |-- use-mobile.tsx             # Mobile breakpoint helper
+|   |   `-- use-toast.ts               # Toast state helper
+|   |
+|   |-- lib/                           # Core grammar logic and utilities
+|   |   |-- cfg-engine.ts              # Earlier CFG engine iteration
+|   |   |-- cfg-engine-fixed.ts        # Final CFG parsing and derivation engine
+|   |   |-- export-utils.ts            # Image export helpers
+|   |   `-- utils.ts                   # Shared utility helpers
+|   |
+|   |-- pages/                         # Main page-level views
+|   |   |-- Index.tsx                  # App shell and tab routing
+|   |   |-- LearnPageFixed.tsx         # Final Learn page
+|   |   |-- GeneratorPageEnhanced.tsx  # Final Generator page
+|   |   |-- VisualizerPageEnhanced.tsx # Final Visualizer page
+|   |   |-- QuizPage.tsx               # Quiz page
+|   |   |-- HelpPageEnhanced.tsx       # Final Help page
+|   |   `-- *.tsx                      # Earlier iteration page files kept from development
+|   |
+|   |-- test/                          # Automated tests and setup
+|   |   |-- cfg-engine-fixed.test.ts   # CFG engine regression tests
+|   |   |-- example.test.ts            # Example baseline test
+|   |   `-- setup.ts                   # Vitest setup file
+|   |
+|   |-- App.tsx                        # Top-level React app wrapper
+|   |-- App.css                        # Component-level styles
+|   |-- index.css                      # Global styles, tokens, and animations
+|   |-- main.tsx                       # React entry point
+|   `-- vite-env.d.ts                  # Vite type declarations
+|
+|-- .gitignore                         # Git ignore rules
+|-- components.json                    # shadcn/ui component config
+|-- eslint.config.js                   # ESLint rules
+|-- index.html                         # HTML entry and metadata
+|-- package.json                       # Project manifest and scripts
+|-- package-lock.json                  # Locked npm dependency tree
+|-- postcss.config.js                  # PostCSS configuration
+|-- tailwind.config.ts                 # Tailwind theme configuration
+|-- tsconfig.json                      # Shared TypeScript config
+|-- tsconfig.app.json                  # Frontend TypeScript config
+|-- tsconfig.node.json                 # Tooling TypeScript config
+|-- vite.config.ts                     # Vite configuration
+|-- vitest.config.ts                   # Vitest configuration
+`-- README.md                          # Project documentation
+```
+
 ## Repository Structure And File Purpose
 
 ### Root Files
