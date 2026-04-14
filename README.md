@@ -19,9 +19,9 @@ This project is deployed through Vercel.
 
 ## Video Walkthrough
 
-A short screen recording of the website is included below:
+A short screen recording of the website is included below. GitHub does not reliably render a repository `.mp4` inline inside `README.md`, so the preview image opens the recorded demo directly.
 
-<video src="docs/readme/media/cfg-demo-walkthrough.mp4" controls width="100%"></video>
+[![Watch the project walkthrough video](docs/readme/screenshots/generator-derivations.png)](docs/readme/media/cfg-demo-walkthrough.mp4)
 
 ## Website Screenshots
 
