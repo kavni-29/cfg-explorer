@@ -10,45 +10,105 @@ interface QuizQuestion {
   explanation: string;
 }
 
-const questions: QuizQuestion[] = [
-  {
-    id: 'q1',
-    prompt: 'Which symbol in a CFG must appear as the root of every parse tree?',
-    options: ['Any terminal', 'The start symbol', 'The leftmost non-terminal', 'The first production'],
-    answer: 1,
-    explanation: 'Every derivation begins from the start symbol, so the parse tree root must be that symbol.',
-  },
-  {
-    id: 'q2',
-    prompt: 'In a leftmost derivation, which non-terminal is expanded at each step?',
-    options: ['The deepest one', 'The rightmost one', 'The leftmost one', 'The start symbol only'],
-    answer: 2,
-    explanation: 'Leftmost derivation means the first non-terminal from the left is always expanded next.',
-  },
-  {
-    id: 'q3',
-    prompt: 'What is the yield of a parse tree?',
-    options: ['All internal nodes from top to bottom', 'The production rules used', 'The leaf terminals read left to right', 'The set of non-terminals in the tree'],
-    answer: 2,
-    explanation: 'The yield is formed by reading the terminal leaves from left to right.',
-  },
-  {
-    id: 'q4',
-    prompt: 'A grammar is ambiguous when:',
-    options: ['It has more than four rules', 'A string has two different parse trees', 'It contains epsilon', 'It has both terminals and non-terminals'],
-    answer: 1,
-    explanation: 'Ambiguity means at least one string can be parsed in more than one structurally distinct way.',
-  },
-  {
-    id: 'q5',
-    prompt: 'Which of the following is a sentential form?',
-    options: ['Only the final terminal string', 'Any intermediate string during derivation', 'Only the start symbol', 'Only a string with epsilon'],
-    answer: 1,
-    explanation: 'A sentential form is any string of terminals and non-terminals that appears during derivation.',
-  },
-];
+function shuffle<T>(items: T[]) {
+  const next = [...items];
+
+  for (let index = next.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+  }
+
+  return next;
+}
+
+function buildQuestion(prompt: string, correct: string, distractors: string[], explanation: string, id: string): QuizQuestion {
+  const options = shuffle([correct, ...distractors]);
+  return {
+    id,
+    prompt,
+    options,
+    answer: options.indexOf(correct),
+    explanation,
+  };
+}
+
+function buildQuestionSet(): QuizQuestion[] {
+  const leafWordSets = [
+    ['a', 'a', 'b', 'b'],
+    ['id', '+', 'id'],
+    ['the', 'cat', 'sees'],
+    ['(', ')'],
+  ];
+  const randomLeaves = leafWordSets[Math.floor(Math.random() * leafWordSets.length)];
+  const randomStart = shuffle(['S', 'E', 'Expr'])[0];
+
+  const factories = [
+    () =>
+      buildQuestion(
+        `Which symbol must appear as the root of every parse tree generated from a grammar with start symbol ${randomStart}?`,
+        `The start symbol ${randomStart}`,
+        ['Any terminal in the string', 'The first symbol on the right-hand side of a rule', 'The leftmost non-terminal expanded last'],
+        'Every parse tree begins at the start symbol because every derivation starts there.',
+        'root-symbol',
+      ),
+    () =>
+      buildQuestion(
+        'In a leftmost derivation, which non-terminal is expanded at each step?',
+        'The leftmost available non-terminal',
+        ['The deepest non-terminal', 'The rightmost available non-terminal', 'All non-terminals at once'],
+        'A leftmost derivation always rewrites the first non-terminal from the left in the current sentential form.',
+        'leftmost-rule',
+      ),
+    () =>
+      buildQuestion(
+        `If the terminal leaves of a parse tree read ${randomLeaves.join(' ')} from left to right, what is its yield?`,
+        randomLeaves.join(' '),
+        ['The internal nodes of the tree', randomLeaves.slice().reverse().join(' '), 'Only the root label'],
+        'The yield is obtained by reading the leaf terminals from left to right.',
+        'yield-order',
+      ),
+    () =>
+      buildQuestion(
+        'When is a grammar called ambiguous?',
+        'When one string has two different valid parse trees',
+        ['When it contains epsilon', 'When it has many production rules', 'When it uses both terminals and non-terminals'],
+        'Ambiguity means a single string can be assigned more than one parse structure.',
+        'ambiguity',
+      ),
+    () =>
+      buildQuestion(
+        'Which description best matches a sentential form?',
+        'Any intermediate string of terminals and non-terminals during derivation',
+        ['Only the final terminal string', 'Only the start symbol', 'Only strings that contain epsilon'],
+        'A sentential form is any stage of the derivation before or at the final sentence.',
+        'sentential-form',
+      ),
+    () =>
+      buildQuestion(
+        'What does a production rule in a CFG tell you?',
+        'How a non-terminal may be rewritten',
+        ['How a terminal can be split into more terminals', 'How to read the leaves of the parse tree', 'How many parse trees a string must have'],
+        'Production rules specify the allowed replacements for non-terminals.',
+        'production-rule',
+      ),
+    () =>
+      buildQuestion(
+        'Which node type appears only at the leaves of a completed parse tree?',
+        'Terminal nodes',
+        ['Start-symbol nodes', 'Production-rule nodes', 'Only ambiguous nodes'],
+        'Once the derivation is complete, terminals appear as leaves because they do not expand further.',
+        'leaf-type',
+      ),
+  ];
+
+  return shuffle(factories).slice(0, 5).map((factory, index) => {
+    const question = factory();
+    return { ...question, id: `${question.id}-${index}-${Math.random().toString(36).slice(2, 6)}` };
+  });
+}
 
 export default function QuizPage() {
+  const [questions, setQuestions] = useState<QuizQuestion[]>(() => buildQuestionSet());
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({});
 
@@ -70,6 +130,12 @@ export default function QuizPage() {
     setSubmitted({});
   }
 
+  function generateNewSet() {
+    setQuestions(buildQuestionSet());
+    setSelected({});
+    setSubmitted({});
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -81,7 +147,7 @@ export default function QuizPage() {
         <p className="text-xs uppercase tracking-[0.24em] text-primary/80">Quiz Mode</p>
         <h2 className="mt-2 text-2xl font-medium text-foreground">Practice your CFG intuition</h2>
         <p className="mt-2 text-[15px] leading-7 text-muted-foreground">
-          Answer short theory questions, reveal feedback instantly, and use the explanations to tighten up the concepts before exams or assignments.
+          Answer short theory questions, reveal feedback instantly, and generate fresh question sets whenever you want a new round of practice.
         </p>
 
         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,199,0.42))] p-4 shadow-[0_18px_40px_-34px_rgba(84,134,135,0.82)] md:flex-row md:items-center md:justify-between">
@@ -104,6 +170,13 @@ export default function QuizPage() {
             >
               <RefreshCcw className="h-4 w-4" />
               Reset
+            </button>
+            <button
+              onClick={generateNewSet}
+              className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
+            >
+              <RefreshCcw className="h-4 w-4" />
+              New Set
             </button>
           </div>
         </div>

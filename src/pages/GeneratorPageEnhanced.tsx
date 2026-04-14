@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Play, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Pause, Play, Sparkles } from 'lucide-react';
 import ParseTreeSVGFixed from '@/components/ParseTreeSVGFixed';
 import {
   EXAMPLES,
@@ -10,6 +10,7 @@ import {
   type DerivationStep,
 } from '@/lib/cfg-engine-fixed';
 import type { DerivationType, GeneratorState } from './Index';
+import { exportSvgElementAsPng, exportSvgMarkupAsPng, buildDerivationSvgMarkup } from '@/lib/export-utils';
 
 interface GeneratorPageProps {
   state: GeneratorState;
@@ -18,18 +19,19 @@ interface GeneratorPageProps {
 
 function getStepExplanation(step: DerivationStep, index: number) {
   if (index === 0) {
-    return 'Start with the grammar start symbol before applying any production rule.';
+    return 'The derivation opens at the start symbol, which acts as the root idea from which the whole sentence will unfold.';
   }
 
   if (step.expandedSymbol === null) {
-    return 'This step records the beginning of the derivation.';
+    return 'This frame marks the setup moment before any replacement is applied.';
   }
 
   const replacement = step.replacement.join(' ');
-  return `Step ${index} expands ${step.expandedSymbol} using ${step.ruleUsed}, replacing it with ${replacement}. This gives the sentential form shown here.`;
+  return `At this moment, ${step.expandedSymbol} is the chosen non-terminal. Applying ${step.ruleUsed} rewrites it as ${replacement}, which pushes the sentential form one step closer to the target string.`;
 }
 
 export default function GeneratorPageEnhanced({ state, onStateChange }: GeneratorPageProps) {
+  const parseTreeExportRef = useRef<HTMLDivElement | null>(null);
   const {
     activeExample,
     derivationType,
@@ -252,8 +254,11 @@ export default function GeneratorPageEnhanced({ state, onStateChange }: Generato
 
             {parseTree ? (
               <div className="rounded-2xl border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,240,0.94))] p-6 shadow-[0_24px_50px_-40px_rgba(84,134,135,0.9)]">
-                <h3 className="mb-4 text-xl font-medium text-foreground">Parse Tree</h3>
-                <div className="overflow-x-auto">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="text-xl font-medium text-foreground">Parse Tree</h3>
+                  <TreeExportButtons filenameBase="generator-parse-tree" containerRef={parseTreeExportRef} />
+                </div>
+                <div ref={parseTreeExportRef} className="overflow-x-auto">
                   <ParseTreeSVGFixed root={parseTree} />
                 </div>
               </div>
@@ -267,14 +272,34 @@ export default function GeneratorPageEnhanced({ state, onStateChange }: Generato
 
 function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; label: string }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   useEffect(() => {
     setCurrentStep(0);
+    setIsPlaying(false);
   }, [steps, label]);
 
   if (!steps?.length) {
     return <p className="text-[15px] text-muted-foreground">No derivation available.</p>;
   }
+
+  useEffect(() => {
+    if (!isPlaying) {
+      return;
+    }
+
+    if (currentStep >= steps.length - 1) {
+      setIsPlaying(false);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setCurrentStep(step => Math.min(steps.length - 1, step + 1));
+    }, 1200 / playbackSpeed);
+
+    return () => window.clearTimeout(timeout);
+  }, [currentStep, isPlaying, playbackSpeed, steps.length]);
 
   const activeStep = steps[currentStep];
 
@@ -282,13 +307,41 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-primary">{label}</h3>
-        <span className="text-[15px] text-muted-foreground">
-          Step {currentStep + 1} / {steps.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={async () => {
+              const markup = buildDerivationSvgMarkup(label, steps.map(step => ({
+                sententialForm: step.sententialForm,
+                ruleUsed: step.ruleUsed,
+              })));
+              await exportSvgMarkupAsPng(markup, 1120, Math.max(260, 36 * 2 + 94 + steps.length * 62), `${label.toLowerCase().replace(/\s+/g, '-')}.png`);
+            }}
+            className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-3 py-2 text-sm text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
+          >
+            <Download className="h-4 w-4" />
+            Image
+          </button>
+          <div className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-3 py-2 text-sm text-muted-foreground">
+            <span>Speed</span>
+            <select
+              value={playbackSpeed}
+              onChange={event => setPlaybackSpeed(Number(event.target.value))}
+              className="rounded-full border border-border bg-transparent px-2 py-0.5 text-sm text-foreground focus:outline-none"
+            >
+              <option value={0.75}>0.75x</option>
+              <option value={1}>1x</option>
+              <option value={1.5}>1.5x</option>
+              <option value={2}>2x</option>
+            </select>
+          </div>
+          <span className="text-[15px] text-muted-foreground">
+            Step {currentStep + 1} / {steps.length}
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="max-h-[420px] space-y-0 overflow-y-auto rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(247,247,240,0.74),rgba(255,255,255,0.96))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+        <div className="space-y-0 rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(247,247,240,0.74),rgba(255,255,255,0.96))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
           {steps.map((step, index) => {
             if (index > currentStep) {
               return null;
@@ -347,23 +400,34 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
           initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25 }}
-          className="rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,199,0.38))] p-5 shadow-[0_18px_40px_-34px_rgba(84,134,135,0.82)]"
+          className="rounded-xl border border-border/60 bg-[linear-gradient(155deg,rgba(255,255,255,0.98),rgba(255,255,199,0.42),rgba(255,255,255,0.96))] p-5 shadow-[0_18px_40px_-34px_rgba(84,134,135,0.82)]"
         >
-          <p className="text-xs uppercase tracking-[0.18em] text-primary/80">Step Explanation</p>
-          <h4 className="mt-2 text-lg font-medium text-foreground">
-            {currentStep === 0 ? 'Starting point' : `Why step ${currentStep} happens`}
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+              Step Spotlight
+            </span>
+            <p className="text-xs uppercase tracking-[0.18em] text-primary/80">Guided Explanation</p>
+          </div>
+          <h4 className="mt-3 text-lg font-medium text-foreground">
+            {currentStep === 0 ? 'Where the derivation begins' : `What changes in step ${currentStep}`}
           </h4>
           <p className="mt-3 text-[15px] leading-7 text-muted-foreground">
             {getStepExplanation(activeStep, currentStep)}
           </p>
-          <div className="mt-4 rounded-xl bg-white/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-            <p className="text-sm font-medium text-primary">Rule used</p>
+          <div className="mt-4 rounded-xl border border-border/60 bg-white/80 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <p className="text-sm font-medium text-primary">Production in focus</p>
             <p className="mt-2 font-mono text-[15px] text-foreground">{activeStep.ruleUsed}</p>
+          </div>
+          <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-medium text-primary">Reading hint</p>
+            <p className="mt-1 text-[14px] leading-6 text-muted-foreground">
+              Watch the highlighted non-terminal in the step list. That token is the exact symbol being rewritten in this moment.
+            </p>
           </div>
         </motion.div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => setCurrentStep(step => Math.max(0, step - 1))}
           disabled={currentStep === 0}
@@ -372,12 +436,24 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
           <ChevronLeft className="h-4 w-4" />
           Previous
         </button>
-        <button
-          onClick={() => setCurrentStep(0)}
-          className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:text-foreground"
-        >
-          Reset
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsPlaying(current => !current)}
+            className="flex items-center gap-2 rounded-lg border border-border bg-white/80 px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
+          >
+            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isPlaying ? 'Pause' : 'Autoplay'}
+          </button>
+          <button
+            onClick={() => {
+              setCurrentStep(0);
+              setIsPlaying(false);
+            }}
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 hover:text-foreground"
+          >
+            Reset
+          </button>
+        </div>
         <button
           onClick={() => setCurrentStep(step => Math.min(steps.length - 1, step + 1))}
           disabled={currentStep === steps.length - 1}
@@ -387,6 +463,40 @@ function DerivationStepper({ steps, label }: { steps: DerivationStep[] | null; l
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
+    </div>
+  );
+}
+
+function TreeExportButtons({
+  filenameBase,
+  containerRef,
+}: {
+  filenameBase: string;
+  containerRef: RefObject<HTMLDivElement | null>;
+}) {
+  async function handleImageExport() {
+    const container = containerRef.current;
+    const svg = container?.querySelector('svg');
+    if (svg instanceof SVGSVGElement) {
+      await exportSvgElementAsPng(svg, `${filenameBase}.png`);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={async () => {
+          try {
+            await handleImageExport();
+          } catch (error) {
+            window.alert(error instanceof Error ? error.message : 'Image export failed.');
+          }
+        }}
+        className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-3 py-2 text-sm text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
+      >
+        <Download className="h-4 w-4" />
+        Image
+      </button>
     </div>
   );
 }
